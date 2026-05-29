@@ -34,4 +34,28 @@ router.post("/bulk", async (req, res) => {
   }
 });
 
+// 4. DELETE: Single student delete karne ke liye
+router.delete("/:id", async (req, res) => {
+  try {
+    // Frontend custom 'id' bhejta hai (e.g., STUD-12345), isliye findOneAndDelete use kiya
+    const deletedStudent = await Student.findOneAndDelete({ id: req.params.id });
+    if (!deletedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    res.status(200).json({ message: "Student deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting student", error });
+  }
+});
+
+// 5. DELETE: Tamam students ko wipe karne ke liye (Database Reset)
+router.delete("/", async (req, res) => {
+  try {
+    await Student.deleteMany({});
+    res.status(200).json({ message: "All students wiped successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error wiping students", error });
+  }
+});
+
 export default router;
