@@ -37,7 +37,6 @@ router.post("/bulk", async (req, res) => {
 // 4. DELETE: Single student delete karne ke liye
 router.delete("/:id", async (req, res) => {
   try {
-    // Frontend custom 'id' bhejta hai (e.g., STUD-12345), isliye findOneAndDelete use kiya
     const deletedStudent = await Student.findOneAndDelete({ id: req.params.id });
     if (!deletedStudent) {
       return res.status(404).json({ message: "Student not found" });
@@ -55,6 +54,23 @@ router.delete("/", async (req, res) => {
     res.status(200).json({ message: "All students wiped successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error wiping students", error });
+  }
+});
+
+// 6. PUT: Single student ka data update/edit karne ke liye
+router.put("/:id", async (req, res) => {
+  try {
+    const updatedStudent = await Student.findOneAndUpdate(
+      { id: req.params.id }, 
+      req.body, // Naya data jo frontend bheje ga
+      { new: true } // Return updated document
+    );
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating student", error });
   }
 });
 
