@@ -30,4 +30,27 @@ router.post("/", async (req, res) => {
   }
 });
 
+// 3. DELETE: Single marks entry delete karne ke liye
+router.delete("/:id", async (req, res) => {
+  try {
+    const deletedMark = await Mark.findOneAndDelete({ id: req.params.id });
+    if (!deletedMark) {
+      return res.status(404).json({ message: "Mark entry not found" });
+    }
+    res.status(200).json({ message: "Mark entry deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting mark", error });
+  }
+});
+
+// 4. DELETE: Tamam marks wipe karne ke liye (Database Reset)
+router.delete("/", async (req, res) => {
+  try {
+    await Mark.deleteMany({});
+    res.status(200).json({ message: "All marks wiped successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error wiping marks", error });
+  }
+});
+
 export default router;
