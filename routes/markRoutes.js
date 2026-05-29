@@ -53,4 +53,21 @@ router.delete("/", async (req, res) => {
   }
 });
 
+// 5. PUT: Single mark entry update/edit karne ke liye
+router.put("/:id", async (req, res) => {
+  try {
+    const updatedMark = await Mark.findOneAndUpdate(
+      { id: req.params.id }, 
+      req.body, // Naya data jo frontend bheje ga
+      { new: true } // Return updated document
+    );
+    if (!updatedMark) {
+      return res.status(404).json({ message: "Mark entry not found" });
+    }
+    res.status(200).json(updatedMark);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating mark", error });
+  }
+});
+
 export default router;
