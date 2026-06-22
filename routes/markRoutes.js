@@ -13,20 +13,39 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 2. POST: Naye marks add karne ke liye (Single/Bulk)
+// 2. POST: Naye marks add karne ke liye (Single/Bulk) - With Upsert Fix
 router.post("/", async (req, res) => {
   try {
-    // Check agar array hai toh bulk insert, warna single insert
+    // Check agar array hai toh bulk processing hogi
     if (Array.isArray(req.body)) {
-      const savedMarks = await Mark.insertMany(req.body);
-      res.status(201).json(savedMarks);
+      const bulkOps = req.body.map((markData) => ({
+        updateOne: {
+          filter: { 
+            studentId: markData.studentId, 
+            subject: markData.subject, 
+            round: markData.round 
+          },
+          update: { $set: markData },
+          upsert: true, // Agar nahi mila toh naya insert karega, mil gaya toh update
+        },
+      }));
+
+      const result = await Mark.bulkWrite(bulkOps);
+      res.status(201).json({ message: "Bulk marks processed successfully", result });
     } else {
-      const newMark = new Mark(req.body);
-      const savedMark = await newMark.save();
+      // Single entry ke liye Upsert logic
+      const { studentId, subject, round } = req.body;
+
+      const savedMark = await Mark.findOneAndUpdate(
+        { studentId, subject, round }, // In teen cheezon se check karega ke duplicate hai ya nahi
+        req.body,                     // Naya data update karega
+        { new: true, upsert: true, runValidators: true } // Upsert option enable kiya
+      );
+
       res.status(201).json(savedMark);
     }
   } catch (error) {
-    res.status(400).json({ message: "Error adding marks", error });
+    res.status(400).json({ message: "Error processing marks", error });
   }
 });
 
